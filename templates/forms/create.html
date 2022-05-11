@@ -1,0 +1,298 @@
+{% extends "forms/base_forms.html" %}
+{% load static %}
+
+{% block extra_head %}
+    <script type="text/javascript" src="{% static "jquery.min.js" %}"></script>
+    <script src={% static "jsuites.js" %}></script>
+    <script src="{% static "jsuites.webcomponents.js" %}"></script>
+    <link rel="stylesheet" href="{% static "jsuites.css" %}" type="text/css" />
+    <link rel="stylesheet" href="{% static "mdDateTimePicker.min.css" %}">
+    <script src="{% static "jquery-clock-timepicker.min.js" %}"></script>
+{% endblock %}
+
+{% block content %}
+    <form class="was-validated" method="post" enctype="multipart/form-data" action="{% url "create_form_submit" %}">
+        {% csrf_token %}
+        <h2 class="mx-3">Info:</h2>
+        <div class="m-3">
+            <input placeholder="test name" type="text" class="form-control form-control-lg" name="test_name" required>
+        </div>
+        <div class="m-3">
+            <input placeholder="test name" type="file" accept="image/*" class="form-control form-control-lg" name="test_image">
+        </div>
+        <div class="m-3">
+          <p>Time till test available(leave blank to make unlimited)</p>
+                    <div class="row mb-2">
+                        <div class="col d-flex">
+                          <label for="calendar"></label>
+                          <input name="test_calendar" class="form-control col form-control-lg" id='calendar'>
+                        </div>
+                        <div class="col">
+                           <label for="timePicker"></label>
+                          <input class="form-control form-control-lg" name="test_time" type="text" id="timePicker">
+                        </div>
+                      </div>
+              </p>
+        </div>
+        <div class="m-3">
+            <textarea placeholder="test description" class="form-control form-control-lg" name="test_description"></textarea>
+        </div>
+        <div class="m-3" id="questions">
+            <div id="new_btn" class="input-group mb-3">
+              <button type="button" id="create_question_button" class="btn btn-outline-primary"><i class="bi bi-plus-circle"></i> New question</button>
+              <select class="form-select" id="inputGroupSelect" aria-label="select with addon">
+                <option value="question" selected>Question</option>
+                <option value="number">Number</option>
+                <option value="select">Select</option>
+              </select>
+            </div>
+        </div>
+    </form>
+    <script>
+        const button = document.getElementById("create_question_button");
+        const select = document.getElementById("inputGroupSelect");
+        const questions_div = document.getElementById("questions");
+        let q_num = 1;
+
+        btn = document.createElement("div");
+        btn.className = `row row-cols-1 row-cols-md-1 g-4 m-1`;
+        btn.innerHTML = `<button id="submit_button" class="fs-2 mb-3 btn btn-success"><i class="bi bi-check"></i> Submit form</button>`;
+
+        const btn2 = document.getElementById("new_btn");
+
+        button.onclick = function () {
+            let type = select.options[select.selectedIndex].value;
+            let div = createBlock(q_num, type);
+            if (q_num === 1){
+                questions_div.appendChild(btn);
+            }
+            questions_div.insertBefore(div, btn2);
+            q_num += 1;
+        }
+
+        function removeQuestion(button){
+            button.parentNode.parentNode.parentNode.parentNode.parentNode.remove();
+            q_num -= 1;
+            if (q_num === 1) {
+                questions_div.removeChild(btn);
+            }
+            else {
+                for (let i = 0; i < questions_div.children.length-2; i++) {
+                    let el = questions_div.children[i];
+                    let el_type = el.getAttribute("type");
+                    const orig_id = el.id;
+                    let num = i + 1;
+                    el.id = num;
+
+                    let text_el = document.getElementById(`${orig_id + "_question_text"}`);
+                    text_el.id = `${num + "_question_text"}`;
+                    text_el.innerText = `Question №${num}`;
+
+                    let label = document.getElementById(`${orig_id + "_question_label"}`);
+                    label.id = `${num + "_question_label"}`;
+                    label.setAttribute("for", `${num + "question"}`);
+
+                    let question = document.getElementById(`${orig_id + "question"}`);
+                    question.name = `${num + "_question"}`
+                    question.id = `${num + "question"}`;
+
+                    let question_help = document.getElementById(`${orig_id + "question_help"}`);
+                    question_help.name = `${num + "_question_help"}`;
+                    question_help.id = `${num + "question_help"}`;
+
+                    let question_type = document.getElementById(`${orig_id + "question_type"}`);
+                    question_type.name = `${num + "_question_type"}`;
+                    question_type.id = `${num + "question_type"}`;
+
+
+                    let question_required = document.getElementById(`${orig_id + "SwitchCheckDefault"}`);
+                    question_required.value = `${num + "_question_required"}`;
+                    question_required.name = `${num + "_question_required"}`;
+                    question_required.id = `${num + "SwitchCheckDefault"}`;
+
+                    let question_required_label = document.getElementById(`${orig_id + "SwitchCheckDefault_label"}`);
+                    question_required_label.id = `${num + "SwitchCheckDefault_label"}`;
+                    question_required_label.setAttribute("for", `${num + "SwitchCheckDefault"}`);
+
+                    if (el_type === "question" || el_type === "number"){
+                        let question_answer = document.getElementById(`${orig_id + "question_answer"}`);
+                        question_answer.name = `${num + "_question_answer"}`;
+                        question_answer.id = `${num + "question_answer"}`;
+
+                    } else if (el_type === "select") {
+                        let option = document.getElementById(`${orig_id + "_options"}`);
+                        option.id = `${num + "_options"}`;
+
+                        let options = option.children;
+                        for (let j = 0; j < options.length; j++) {
+                            let el = options[j];
+                            el.id = `${num}_${j}_option`;
+
+                            let input = $(`#${num}_${j}_option .form-control`)[0];
+                            let check = $(`#${num}_${j}_option .form-check-input`)[0];
+
+                            input.name = `${num}_${j}_question_option_text`;
+                            input.id = `${num}_${j}_question_option_text_id`;
+
+                            check.name = `${num}_${j}_question_option_required`;
+                            check.value = `${num}_${j}_question_option_required`;
+                        }
+                    }
+                }
+            }
+        }
+
+        function createBlock(num, type){
+            let div = document.createElement("div");
+            div.className = "row row-cols-1 row-cols-md-1 g-4 m-1";
+            div.id = num;
+            div.setAttribute("type", type);
+            if (type === "question"){
+            div.innerHTML = `
+                        <div class="card col mb-4">
+                            <div class="card-body">
+                              <div class="mb-3">
+                                <div class="row">
+                                    <h2 id="${num + "_question_text"}" class="col col-md-11">Question №${num}</h2>
+                                    <button class="col col-md-1 btn border-0" type="button" onclick="removeQuestion(this)"><i class="bi bi-x-lg"></i></button>
+                                </div>
+                                <label id="${num + "_question_label"}" for="${num + "question"}" class="form-label fs-2 mb-3"></label>
+                                <input placeholder="question" type="text" class="form-control form-control-lg m-2" name="${num + "_question"}" id="${num + "question"}" required>
+                                <input placeholder="help text(optional)" type="text" class="form-control form-control-sm m-2" name="${num + "_question_help"}" id="${num + "question_help"}">
+                                <input placeholder="correct answer(optional)" type="text" class="form-control form-control-sm m-2" name="${num + "_question_answer"}" id="${num + "question_answer"}">
+                                <input type="hidden" name="${num + "_question_type"}" id="${num + "question_type"}" value="${type}">
+                                <div class="form-check form-switch mx-2">
+                                  <input value="${num + "_question_required"}" name="${num + "_question_required"}" class="form-check-input" type="checkbox" role="switch" id="${num + "SwitchCheckDefault"}">
+                                  <label id="${num + "SwitchCheckDefault_label"}" class="form-check-label" for="${num + "SwitchCheckDefault"}">Is answer required?</label>
+                                </div>
+                              </div>
+                            </div>
+                        </div>
+                        `
+            } else if (type === "number"){
+                div.innerHTML = `
+                <div class="card col mb-4">
+                    <div class="card-body">
+                      <div class="mb-3">
+                        <div class="row">
+                            <h2 id="${num + "_question_text"}" class="col col-md-11">Question №${num}</h2>
+                            <button class="col col-md-1 btn border-0" type="button" onclick="removeQuestion(this)"><i class="bi bi-x-lg"></i></button>
+                        </div>
+                        <label id="${num + "_question_label"}" for="${num + "question"}" class="form-label fs-2 mb-3"></label>
+                        <input placeholder="question" type="text" class="form-control form-control-lg m-2" name="${num + "_question"}" id="${num + "question"}" required>
+                        <input placeholder="help text(optional)" type="text" class="form-control form-control-sm m-2" name="${num + "_question_help"}" id="${num + "question_help"}">
+                        <input placeholder="correct answer(optional)" type="number" class="form-control form-control-sm m-2" name="${num + "_question_answer"}" id="${num + "question_answer"}">
+                        <input type="hidden" name="${num + "_question_type"}" id="${num + "question_type"}" value="${type}">
+                        <div class="form-check form-switch mx-2">
+                          <input value="${num + "_question_required"}" name="${num + "_question_required"}" class="form-check-input" type="checkbox" role="switch" id="${num + "SwitchCheckDefault"}">
+                          <label id="${num + "SwitchCheckDefault_label"}" class="form-check-label" for="${num + "SwitchCheckDefault"}">Is answer required?</label>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+                `
+            } else if (type === "select"){
+                div.innerHTML = `
+                <div class="card col mb-4">
+                    <div class="card-body">
+                      <div class="mb-3">
+                        <div class="row">
+                            <h2 id="${num + "_question_text"}" class="col col-md-11">Question №${num}</h2>
+                            <button class="col col-md-1 btn border-0" type="button" onclick="removeQuestion(this)"><i class="bi bi-x-lg"></i></button>
+                        </div>
+                        <label id="${num + "_question_label"}" for="${num + "question"}" class="form-label fs-2 mb-3"></label>
+                        <input placeholder="question" type="text" class="form-control form-control-lg m-2" name="${num + "_question"}" id="${num + "question"}" required>
+                        <input placeholder="help text(optional)" type="text" class="form-control form-control-sm m-2" name="${num + "_question_help"}" id="${num + "question_help"}">
+
+                        <div id="${num}_options">
+                            <div id="${num}_0_option" class="row">
+                                <div class="col col-md-11">
+                                    <div class="input-group m-2">
+                                        <div class="input-group-text">
+                                            <input class="form-check-input" type="checkbox" name="${num}_0_question_option_required" value="${num}_0_question_option_required" aria-label="Checkbox for following text input">
+                                        </div>
+                                        <input placeholder="option" required type="text" class="form-control form-control-sm" name="${num}_0_question_option_text" id="${num}_0_question_option_text_id">
+                                    </div>
+                                </div>
+                                <div class="col col-md-1">
+                                    <button onclick="create_new_option(this)" type="button" class="m-2 btn border-0"><i class="bi bi-plus-circle"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="${num + "_question_type"}" id="${num + "question_type"}" value="${type}">
+                        <div class="form-check form-switch mx-2">
+                          <input value="${num + "_question_required"}" name="${num + "_question_required"}" class="form-check-input" type="checkbox" role="switch" id="${num + "SwitchCheckDefault"}">
+                          <label id="${num + "SwitchCheckDefault_label"}" class="form-check-label" for="${num + "SwitchCheckDefault"}">Is answer required?</label>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+                `
+            }
+            return div;
+        }
+
+        jSuites.calendar(document.getElementById('calendar'), {
+            time: false,
+            startingDay: 1,
+            format: 'DD.MM.YYYY'
+        });
+
+        $('#timePicker').clockTimePicker();
+
+        function create_new_option(element){
+            const parent_block = element.parentNode.parentNode.parentNode;
+            const id = parseInt(parent_block.id.split("_")[0]);
+            const options = parent_block.children;
+            let last_opt = options[options.length - 1];
+            let last_id = parseInt(last_opt.id.split("_")[1]);
+            let div = document.createElement("div");
+            div.id = `${id}_${last_id + 1}_option`;
+            div.className = "row";
+            div.innerHTML = `
+                <div class="col col-md-11">
+                    <div class="input-group m-2">
+                        <div class="input-group-text">
+                            <input class="form-check-input" type="checkbox" name="${id}_${last_id + 1}_question_option_required" value="${id}_${last_id + 1}_question_option_required" aria-label="Checkbox for following text input">
+                        </div>
+                        <input placeholder="option" required type="text" class="form-control form-control-sm" name="${id}_${last_id + 1}_question_option_text" id="${id}_${last_id + 1}_question_option_text_id">
+                    </div>
+                </div>
+                <div class="col col-md-1">
+                    <button onclick="create_new_option(this)" type="button" class="m-2 btn border-0"><i class="bi bi-plus-circle"></i></button>
+                </div>
+            `
+            let new_btn = document.createElement("button");
+            new_btn.setAttribute("onclick", "remove_option(this)");
+            new_btn.setAttribute("type", "button");
+            new_btn.setAttribute("class", "m-2 btn border-0");
+            new_btn.innerHTML = `<i class="bi bi-x-circle"></i>`;
+
+            const element_parent_block = element.parentNode;
+            element_parent_block.removeChild(element);
+            element_parent_block.appendChild(new_btn);
+
+            parent_block.appendChild(div);
+        }
+        function remove_option(element){
+            const parent_block = element.parentNode.parentNode.parentNode;
+            const id = parseInt(parent_block.id.split("_")[0]);
+            parent_block.removeChild(element.parentNode.parentNode);
+            const options = parent_block.children;
+
+            for (let i = 0; i < options.length; i++) {
+                let el = options[i];
+                el.id = `${id}_${i}_option`;
+
+                let input = $(`#${id}_${i}_option .form-control`)[0];
+                let check = $(`#${id}_${i}_option .form-check-input`)[0];
+
+                input.name = `${id}_${i}_question_option_text`;
+                input.id = `${id}_${i}_question_option_text_id`;
+
+                check.name = `${id}_${i}_question_option_required`;
+                check.value = `${id}_${i}_question_option_required`;
+            }
+        }
+    </script>
+{% endblock %}

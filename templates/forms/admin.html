@@ -1,0 +1,27 @@
+{% extends "forms/base_forms.html" %}
+
+{% block content %}
+<div class="row row-cols-1 row-cols-md-1 g-4 m-3">
+    {% for submission in submissions %}
+        <div class="card col mb-2">
+            <a style="text-decoration: none; color: black" href="{% url "form_result" slug=test.slug sub_slug=submission.slug %}">
+                <div class="card-body">
+                  <div class="mb-3">
+                      {% if submission.user %}
+                        <h2 class="m-2 mx-4">Submission by <a style="text-decoration: none" href="{% url "profile" submission.user.username %}">{{ submission.user.username }}</a></h2>
+                      {% else %}
+                          <h2 class="m-2 mx-4">Submission by Anonymous user</h2>
+                      {% endif %}
+                    <p class="m-2 mx-4">submitted {{ submission.submitted | date }} {{  submission.submitted | time }}</p>
+                  <ol class="list-group mx-3 list-group-numbered">
+                      {% for answer in submission.get_answers %}
+                          <div>{{ answer.answer.question.question }}</div><li class="list-group-item {{ answer.answer.type }} text-white">{{ answer.answer }}</li>
+                      {% endfor %}
+                  </ol>
+                  </div>
+                </div>
+            </a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

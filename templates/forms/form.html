@@ -1,0 +1,67 @@
+{% extends "forms/base_forms.html" %}
+
+{% block content %}
+    <div class="row row-cols-1 row-cols-md-1 g-4 m-3">
+    <form class="was-validated" method="post" action="{% url "submit_test" slug=test.slug %}">
+    {% csrf_token %}
+    {% for question in questions %}
+        {% if question.type == "question" %}
+        <div class="card col mb-4">
+            <div class="card-body">
+              <div class="mb-3">
+                <label for="{{ question.id }}" class="form-label fs-2 mb-3">{{ question.question }}</label>
+                <input autocomplete="on" placeholder="type your answer" name="{{ question.id }}" type="text" class="form-control" id="{{ question.id }}" {% if question.required %}required{% endif %} aria-describedby="{{ question.id }}">
+                  {% if question.help %}
+                    <div id="{{ question.id }}" class="form-text mt-3">{{ question.help }}</div>
+                  {% endif %}
+              </div>
+            </div>
+        </div>
+        {% elif question.type == "number" %}
+        <div class="card col mb-4">
+            <div class="card-body">
+              <div class="mb-3">
+                <label for="{{ question.id }}" class="form-label fs-2 mb-3">{{ question.question }}</label>
+                <input autocomplete="on" placeholder="type your answer(number)" name="{{ question.id }}" type="number" class="form-control" id="{{ question.id }}" {% if question.required %}required{% endif %} aria-describedby="{{ question.id }}">
+                  {% if question.help %}
+                    <div id="{{ question.id }}" class="form-text mt-3">{{ question.help }}</div>
+                  {% endif %}
+              </div>
+            </div>
+        </div>
+        {% elif question.type == "select" %}
+        <div class="card col mb-4">
+            <div class="card-body">
+              <div class="mb-3">
+                <label for="{{ question.id }}" class="form-label fs-2 mb-3">{{ question.question }}</label>
+                  {% if question.is_multiple_select %}
+                      {% for option in question.get_selection_list %}
+                          <div class="form-check">
+                                  <input class="form-check-input" type="checkbox" name="{{ option.get_name }}" value="{{ question.id }}" id="{{ option.get_id }}">
+                              <label class="form-check-label" for="{{ option.get_id }}">
+                                {{ option.text }}
+                              </label>
+                            </div>
+                      {% endfor %}
+                  {% else %}
+                      {% for option in question.get_selection_list %}
+                            <div class="form-check">
+                              <input class="form-check-input" type="radio" name="{{ option.get_name }}" id="{{ option.get_id }}" value="{{ option.id }}" {% if question.required %}required{% endif %}>
+                              <label class="form-check-label" for="{{ option.get_id }}">
+                                {{ option.text }}
+                              </label>
+                            </div>
+                      {% endfor %}
+                  {% endif %}
+                  {% if question.help %}
+                    <div id="{{ question.id }}" class="form-text mt-3">{{ question.help }}</div>
+                  {% endif %}
+              </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+    <button type="submit" class="btn btn-success">submit</button>
+    </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "forms/base_forms.html" %}
+
+{% block content %}
+{% if submittion.user %}
+<h2 class="m-2 mx-4">Submittion by <a style="text-decoration: none" href="{% url "profile" submission.user.username %}">{{ submission.user.username }}</a> on <a style="text-decoration: none" href="{% url "form" submission.test.slug %}">{{ submission.test.name }}</a></h2>
+{% else %}
+<h2 class="m-2 mx-4"><a style="text-decoration: none" href="{% url "form" submission.test.slug %}">{{ submission.test.name }}</a></h2>
+{% endif %}
+<p class="m-2 mx-4">submitted {{ submission.submitted | date }} {{  submission.submitted | time }}</p>
+
+<div class="row row-cols-1 row-cols-md-1 g-4 m-3">
+    {% for answer in answers %}
+        <div class="card col mb-2">
+            <div class="card-body">
+              <div class="mb-3">
+                <h1>{{ answer.question.question }}</h1>
+                <p class="{% if not answer.question.test.available %}{{ answer.type }}{% endif %}"><i class="bi-arrow-right"></i> {{ answer.text }}</p>
+              </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "forms/base_forms.html" %}
+
+{% block content %}
+    <div class="row m-5 mb-5 g-1">
+        {% if test.image %}
+        <div class="col">
+            <img class="img-fluid" src="{{ test.image.url }}" alt="img"/>
+        </div>
+        {% endif %}
+        <div class="col d-flex">
+            <div class="align-self-center m-3">
+                <h1 class="fs-2">{{ test.name }}</h1>
+                <p>by: <a href="{% url "profile" username=test.creator.username %}">{{ test.creator.username }}</a></p>
+                    {% if test.time_till and test.available %}
+                        <p>will be available for {{ test.time_till | timeuntil }}</p>
+                    {% elif test.time_till and not test.available %}
+                        <p>was available {{ test.time_till | timesince }} ago</p>
+                    {% endif %}
+                <p>{{ test.description }}</p>
+                {% if test.available %}
+                    <p><a href="{% url "form" slug=test.slug %}" class="btn btn-success">Start</a></p>
+                {% endif %}
+                {% if user == test.creator %}
+                    <p><a href="{% url "form_admin" slug=test.slug %}" class="btn btn-outline-success">Admin</a></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
