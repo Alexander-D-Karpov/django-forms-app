@@ -70,18 +70,18 @@ def admin(request, slug):
 
 @require_http_methods(["POST"])
 def submit(request, slug):
-    dat_n = [x for x in request.POST if x != "csrfmiddlewaretoken"]
     data_dict = {}
-    for x in dat_n:
-        data_dict[x] = request.POST[x]
+    for key in request.POST:
+        if "select" in key:
+            data_dict[key] = list(request.POST.getlist(key))
+        elif key != "csrfmiddlewaretoken":
+            data_dict[key] = request.POST.get(key)
 
-    print(data_dict)
-    subm = 0
-    # subm = (
-    #    handle_test(slug, dat, request.user)
-    #    if request.user.is_authenticated
-    #    else handle_test(slug, dat)
-    # )
+    subm = (
+        handle_test(slug, data_dict, request.user)
+        if request.user.is_authenticated
+        else handle_test(slug, data_dict)
+            )
     if subm:
         return redirect("form_result", slug=slug, sub_slug=subm.slug)
     else:

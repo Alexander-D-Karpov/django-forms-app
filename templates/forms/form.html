@@ -1,4 +1,11 @@
 {% extends "forms/base_forms.html" %}
+{% load static %}
+
+{% block extra_head %}
+    <script type="text/javascript" src="{% static "jquery.min.js" %}"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.14.0-beta2/css/bootstrap-select.min.css" integrity="sha512-mR/b5Y7FRsKqrYZou7uysnOdCIJib/7r5QeJMFvLNHNhtye3xJp1TdJVPLtetkukFn227nKpXD9OjUc09lx97Q==" crossorigin="anonymous"
+      referrerpolicy="no-referrer" />
+{% endblock %}
 
 {% block content %}
     <div class="row row-cols-1 row-cols-md-1 g-4 m-3">
@@ -35,23 +42,21 @@
               <div class="mb-3">
                 <label for="{{ question.id }}" class="form-label fs-2 mb-3">{{ question.question }}</label>
                   {% if question.is_multiple_select %}
+                      <div class="mt-3">
+                      <select name="{{ question.id }}_select" class="selectpicker" {% if question.required %}required{% endif %} multiple aria-label="size 3 select example">
                       {% for option in question.get_selection_list %}
-                          <div class="form-check">
-                                  <input class="form-check-input" type="checkbox" name="{{ option.get_name }}" value="{{ question.id }}" id="{{ option.get_id }}">
-                              <label class="form-check-label" for="{{ option.get_id }}">
-                                {{ option.text }}
-                              </label>
-                            </div>
+                          <option value="{{ option.id }}">{{ option.text }}</option>
                       {% endfor %}
+                      </select>
+                      </div>
                   {% else %}
-                      {% for option in question.get_selection_list %}
-                            <div class="form-check">
-                              <input class="form-check-input" type="radio" name="{{ option.get_name }}" id="{{ option.get_id }}" value="{{ option.id }}" {% if question.required %}required{% endif %}>
-                              <label class="form-check-label" for="{{ option.get_id }}">
-                                {{ option.text }}
-                              </label>
-                            </div>
-                      {% endfor %}
+                      <div class="mt-3">
+                          <select name="{{ question.id }}_select" class="selectpicker" {% if question.required %}required{% endif %} aria-label="size 3 select example">
+                          {% for option in question.get_selection_list %}
+                              <option value="{{ option.id }}">{{ option.text }}</option>
+                          {% endfor %}
+                          </select>
+                      </div>
                   {% endif %}
                   {% if question.help %}
                     <div id="{{ question.id }}" class="form-text mt-3">{{ question.help }}</div>
@@ -64,4 +69,5 @@
     <button type="submit" class="btn btn-success">submit</button>
     </form>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.14.0-beta2/js/bootstrap-select.min.js" integrity="sha512-FHZVRMUW9FsXobt+ONiix6Z0tIkxvQfxtCSirkKc5Sb4TKHmqq1dZa8DphF0XqKb3ldLu/wgMa8mT6uXiLlRlw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 {% endblock %}
